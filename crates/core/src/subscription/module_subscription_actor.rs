@@ -202,7 +202,7 @@ type FullSubscriptionUpdate = FormatSwitch<ws::DatabaseUpdate<BsatnFormat>, ws::
 
 /// A utility for sending an error message to a client and returning early
 macro_rules! return_on_err {
-    ($expr:expr, $handler:expr, $metrics:expr) => {
+    ($expr:expr_2021, $handler:expr_2021, $metrics:expr_2021) => {
         match $expr {
             Ok(val) => val,
             Err(e) => {
@@ -216,7 +216,7 @@ macro_rules! return_on_err {
 
 /// A utility for sending an error message to a client and returning early
 macro_rules! return_on_err_with_sql {
-    ($expr:expr, $sql:expr, $handler:expr) => {
+    ($expr:expr_2021, $sql:expr_2021, $handler:expr_2021) => {
         match $expr.map_err(|err| DBError::WithSql {
             sql: $sql.into(),
             error: Box::new(DBError::Other(err.into())),
@@ -728,20 +728,26 @@ impl ModuleSubscriptions {
         let mut new_queries = 0;
 
         for (sql, hash, hash_with_param) in query_hashes {
-            if let Some(unit) = guard.query(&hash) {
-                plans.push(unit);
-            } else if let Some(unit) = guard.query(&hash_with_param) {
-                plans.push(unit);
-            } else {
-                plans.push(Arc::new(
-                    compile_query_with_hashes(&auth, &*mut_tx, sql, hash, hash_with_param).map_err(|err| {
-                        DBError::WithSql {
-                            error: Box::new(DBError::Other(err.into())),
-                            sql: sql.into(),
-                        }
-                    })?,
-                ));
-                new_queries += 1;
+            match guard.query(&hash) {
+                Some(unit) => {
+                    plans.push(unit);
+                }
+                _ => match guard.query(&hash_with_param) {
+                    Some(unit) => {
+                        plans.push(unit);
+                    }
+                    _ => {
+                        plans.push(Arc::new(
+                            compile_query_with_hashes(&auth, &*mut_tx, sql, hash, hash_with_param).map_err(|err| {
+                                DBError::WithSql {
+                                    error: Box::new(DBError::Other(err.into())),
+                                    sql: sql.into(),
+                                }
+                            })?,
+                        ));
+                        new_queries += 1;
+                    }
+                },
             }
         }
 

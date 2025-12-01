@@ -1435,7 +1435,7 @@ impl RelationalDB {
             TableId,
             Bound<AlgebraicValue>,
             Bound<AlgebraicValue>,
-            impl Iterator<Item = RowRef<'a>>,
+            impl Iterator<Item = RowRef<'a>> + use<'a>,
         ),
         DBError,
     > {
