@@ -1095,14 +1095,14 @@ impl SubscriptionManager {
     fn queries_for_table_update<'a>(
         &'a self,
         table_update: &'a DatabaseTableUpdate,
-        find_rhs_val: &impl Fn(&JoinEdge, &ProductValue) -> Option<AlgebraicValue>,
+        find_rhs_val: impl Fn(&JoinEdge, &ProductValue) -> Option<AlgebraicValue>,
     ) -> impl Iterator<Item = &'a QueryHash> {
         let mut queries = HashSet::new();
         for hash in table_update
             .inserts
             .iter()
             .chain(table_update.deletes.iter())
-            .flat_map(|row| self.queries_for_row(table_update.table_id, row, find_rhs_val))
+            .flat_map(|row| self.queries_for_row(table_update.table_id, row, &find_rhs_val))
         {
             queries.insert(hash);
         }
@@ -1182,7 +1182,7 @@ impl SubscriptionManager {
             .iter()
             .filter(|table| !table.inserts.is_empty() || !table.deletes.is_empty())
             .flat_map(|table_update| {
-                self.queries_for_table_update(table_update, &|edge, row| find_rhs_val(edge, row, tx))
+                self.queries_for_table_update(table_update, |edge, row| find_rhs_val(edge, row, tx))
             })
             // deduplicate queries by their hash
             .filter({
@@ -2161,7 +2161,7 @@ mod tests {
         };
 
         let hashes = subscriptions
-            .queries_for_table_update(&table_update, &|_, _| None)
+            .queries_for_table_update(&table_update, |_, _| None)
             .collect::<Vec<_>>();
 
         assert!(hashes.len() == 3);
@@ -2179,7 +2179,7 @@ mod tests {
         };
 
         let hashes = subscriptions
-            .queries_for_table_update(&table_update, &|_, _| None)
+            .queries_for_table_update(&table_update, |_, _| None)
             .collect::<Vec<_>>();
 
         assert!(hashes.len() == 1);
@@ -2220,7 +2220,7 @@ mod tests {
         };
 
         let hashes = subscriptions
-            .queries_for_table_update(&table_update, &|_, _| None)
+            .queries_for_table_update(&table_update, |_, _| None)
             .cloned()
             .collect::<Vec<_>>();
 
@@ -2236,7 +2236,7 @@ mod tests {
         };
 
         let hashes = subscriptions
-            .queries_for_table_update(&table_update, &|_, _| None)
+            .queries_for_table_update(&table_update, |_, _| None)
             .cloned()
             .collect::<Vec<_>>();
 
@@ -2252,7 +2252,7 @@ mod tests {
         };
 
         let hashes = subscriptions
-            .queries_for_table_update(&table_update, &|_, _| None)
+            .queries_for_table_update(&table_update, |_, _| None)
             .cloned()
             .collect::<Vec<_>>();
 
