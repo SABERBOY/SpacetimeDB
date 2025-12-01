@@ -2322,7 +2322,9 @@ impl MutTxId {
         ) {
             // This is possible on restart if the database was previously running a version
             // before this system table was added.
-            log::error!("[{database_identity}]: delete_st_client_credentials: attempting to delete credentials for missing connection id ({connection_id}), error: {e}");
+            log::error!(
+                "[{database_identity}]: delete_st_client_credentials: attempting to delete credentials for missing connection id ({connection_id}), error: {e}"
+            );
         }
         Ok(())
     }
@@ -2350,7 +2352,9 @@ impl MutTxId {
         {
             Some(ptr) => self.delete(ST_CLIENT_ID, ptr).map(drop)?,
             _ => {
-                log::error!("[{database_identity}]: delete_st_client: attempting to delete client ({identity}, {connection_id}), but no st_client row for that client is resident");
+                log::error!(
+                    "[{database_identity}]: delete_st_client: attempting to delete client ({identity}, {connection_id}), but no st_client row for that client is resident"
+                );
             }
         }
         self.delete_st_client_credentials(database_identity, connection_id)
@@ -2687,7 +2691,7 @@ impl MutTxId {
             // This macros can be thought of as a `throw $e` within `'error`.
             // TODO(centril): Get rid of this once we have stable `try` blocks or polonius.
             macro_rules! throw {
-                ($e:expr_2021) => {
+                ($e:expr) => {
                     break 'error $e.into()
                 };
             }
