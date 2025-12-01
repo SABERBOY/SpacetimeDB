@@ -157,10 +157,10 @@ impl<T: Encode + Send + Sync + 'static> Local<T> {
         info!("close local durability");
 
         drop(self.queue);
-        if let Err(e) = self.persister_task.await {
-            if e.is_panic() {
-                return Err(e).context("persister task panicked");
-            }
+        if let Err(e) = self.persister_task.await
+            && e.is_panic()
+        {
+            return Err(e).context("persister task panicked");
         }
 
         spawn_blocking(move || self.clog.flush_and_sync())
@@ -197,11 +197,8 @@ impl<T: Encode + Send + Sync + 'static> PersisterTask<T> {
             // require `spawn_blocking`.
             if self.max_records_in_commit.get() == 1 {
                 self.flush_append(txdata, true).await;
-            } else {
-                match self.clog.append(txdata) {
-                    Err(retry) => self.flush_append(retry, false).await,
-                    _ => {}
-                }
+            } else if let Err(retry) = self.clog.append(txdata) {
+                self.flush_append(retry, false).await
             }
 
             trace!("appended txdata");
@@ -277,10 +274,10 @@ impl<T: Send + Sync + 'static> FlushAndSyncTask<T> {
                 break;
             };
             // Skip if nothing changed.
-            if let Some(committed) = clog.max_committed_offset() {
-                if self.offset.borrow().is_some_and(|durable| durable == committed) {
-                    continue;
-                }
+            if let Some(committed) = clog.max_committed_offset()
+                && self.offset.borrow().is_some_and(|durable| durable == committed)
+            {
+                continue;
             }
 
             let task = spawn_blocking(move || clog.flush_and_sync()).await;

@@ -268,18 +268,18 @@ impl MutTxId {
         };
 
         // Check for precise index seek
-        if let (Bound::Included(low_val), Bound::Included(up_val)) = (&lower, &upper) {
-            if low_val == up_val {
-                // Fetch index metadata
-                let Some((_, idx, _)) = self.get_table_and_index(index_id) else {
-                    return;
-                };
-
-                let cols = idx.index().indexed_columns.clone();
-                self.read_sets
-                    .insert_index_scan(table_id, cols, low_val.clone(), view.clone());
+        if let (Bound::Included(low_val), Bound::Included(up_val)) = (&lower, &upper)
+            && low_val == up_val
+        {
+            // Fetch index metadata
+            let Some((_, idx, _)) = self.get_table_and_index(index_id) else {
                 return;
-            }
+            };
+
+            let cols = idx.index().indexed_columns.clone();
+            self.read_sets
+                .insert_index_scan(table_id, cols, low_val.clone(), view.clone());
+            return;
         }
 
         // Everything else is treated as a table scan
