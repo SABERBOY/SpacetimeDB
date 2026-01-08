@@ -441,7 +441,7 @@ export const ProductType = {
     typespace?: TypespaceType
   ): Serializer<any> {
     let serializer = SERIALIZERS.get(ty);
-    if (serializer != null) return serializer;
+    if (serializer !== undefined) return serializer;
 
     if (isFixedSizeProduct(ty)) {
       const size = productSize(ty);
@@ -516,7 +516,7 @@ writer.offset += ${primitiveSizes[tag]};`
     }
 
     let deserializer = DESERIALIZERS.get(ty);
-    if (deserializer != null) return deserializer;
+    if (deserializer !== undefined) return deserializer;
 
     if (isFixedSizeProduct(ty)) {
       // const size = productSize(ty);
@@ -653,10 +653,10 @@ export const SumType = {
       };
     } else {
       let serializer = SERIALIZERS.get(ty);
-      if (serializer != null) return serializer;
+      if (serializer !== undefined) return serializer;
       serializer = (writer, value) => {
         const variant = variants.get(value.tag);
-        if (variant == null) {
+        if (variant === undefined) {
           throw `Can't serialize a sum type, couldn't find ${value.tag} tag ${JSON.stringify(value)} in variants ${JSON.stringify([...variants.keys()])}`;
         }
         const { index, serialize } = variant;
@@ -741,7 +741,7 @@ export const SumType = {
       };
     } else {
       let deserializer = DESERIALIZERS.get(ty);
-      if (deserializer != null) return deserializer;
+      if (deserializer !== undefined) return deserializer;
       const deserializers: Record<string, Deserializer<any>> = {};
       deserializer = Function(
         'deserializers',
