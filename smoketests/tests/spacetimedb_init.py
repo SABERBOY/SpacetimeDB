@@ -85,7 +85,7 @@ class TestSpacetimeInit(unittest.TestCase):
 
             self.assertTrue(project_path.exists(), f"Project directory not created for {template['id']}")
 
-            if template.get("server_lang")
+            if template.get("server_lang"):
                 server_path = project_path / "spacetimedb"
                 self.assertTrue(server_path.exists(), f"Server directory not found for {template['id']}")
 
