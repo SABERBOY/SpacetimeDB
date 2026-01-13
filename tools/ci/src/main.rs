@@ -218,7 +218,8 @@ fn main() -> Result<()> {
                 ["-m", "smoketests"]
                     .into_iter()
                     .map(|s| s.to_string())
-                    .chain(smoketest_args),
+                    .chain(smoketest_args)
+                    .chain(vec!["--show-all-output".to_string()]),
             )
             .run()?;
         }
