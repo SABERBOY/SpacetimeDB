@@ -112,7 +112,7 @@ class TestSpacetimeInit(unittest.TestCase):
 
         domain = f"test-{server_lang}-{os.urandom(8).hex()}"
         print(f"  → Building and publishing template '{template_id}' (language: {server_lang}) at {server_path}")
-        spacetime("publish", "--project-path", str(server_path), domain)
+        spacetime("publish", "--yes", "--project-path", str(server_path), domain)
 
         spacetime("delete", "--yes", domain)
 
