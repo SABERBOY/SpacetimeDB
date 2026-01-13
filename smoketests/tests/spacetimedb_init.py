@@ -153,6 +153,11 @@ class TestSpacetimeInit(unittest.TestCase):
         typescript_sdk_path = STDB_DIR / "crates/bindings-typescript"
         self._update_package_json_dependency(package_json_path, "spacetimedb", typescript_sdk_path)
 
+        # Remove lockfile since we changed the dependency to a local path
+        lockfile = server_path / "pnpm-lock.yaml"
+        if lockfile.exists():
+            lockfile.unlink()
+
     def _setup_csharp_nuget(self, server_path):
         """Create a local nuget.config file to avoid polluting global NuGet sources"""
         print(f"  → Setting up C# NuGet sources...")
@@ -200,6 +205,10 @@ class TestSpacetimeInit(unittest.TestCase):
             package_json_path = project_path / "package.json"
             typescript_sdk_path = STDB_DIR / "crates/bindings-typescript"
             self._update_package_json_dependency(package_json_path, "spacetimedb", typescript_sdk_path)
+            # Remove lockfile since we changed the dependency to a local path
+            lockfile = project_path / "pnpm-lock.yaml"
+            if lockfile.exists():
+                lockfile.unlink()
             # First install dependencies if not already done
             pnpm("install", cwd=project_path)
             # Run TypeScript compiler in check mode
