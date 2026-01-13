@@ -98,6 +98,7 @@ class TestSpacetimeInit(unittest.TestCase):
 
     def _publish_server(self, template, server_path):
         server_lang = template["server_lang"]
+        template_id = template["id"]
 
         if server_lang == "typescript":
             self._setup_typescript_local_sdk(server_path)
@@ -110,6 +111,7 @@ class TestSpacetimeInit(unittest.TestCase):
             self._setup_csharp_nuget(server_path)
 
         domain = f"test-{server_lang}-{os.urandom(8).hex()}"
+        print(f"  → Building and publishing template '{template_id}' (language: {server_lang}) at {server_path}")
         spacetime("publish", "--project-path", str(server_path), domain)
 
         spacetime("delete", "--yes", domain)
