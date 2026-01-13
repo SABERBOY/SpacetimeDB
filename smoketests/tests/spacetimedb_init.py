@@ -112,9 +112,9 @@ class TestSpacetimeInit(unittest.TestCase):
 
         domain = f"test-{server_lang}-{os.urandom(8).hex()}"
         print(f"  → Building and publishing template '{template_id}' (language: {server_lang}) at {server_path}")
-        spacetime("publish", "--yes", "--project-path", str(server_path), domain)
+        spacetime("publish", "-s", "local", "--yes", "--project-path", str(server_path), domain)
 
-        spacetime("delete", "--yes", domain)
+        spacetime("delete", "-s", "local", "--yes", domain)
 
     def _update_cargo_toml_dependency(self, cargo_toml_path, package_name, local_path):
         """Replace crates.io dependency with local path dependency."""
