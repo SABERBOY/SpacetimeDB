@@ -50,13 +50,13 @@ class TestSpacetimeInit(unittest.TestCase):
             with self.subTest(template=template["id"]):
                 try:
                     self._test_template(template)
-                    results[template["id"]] = "✓ PASS"
+                    results[template["id"]] = "[PASS]"
                     passed_count += 1
-                    print(f"✓ {template['id']} PASSED")
+                    print(f"[PASS] {template['id']}")
                 except Exception as e:
-                    results[template["id"]] = f"✗ FAIL: {str(e)}"
+                    results[template["id"]] = f"[FAIL]: {str(e)}"
                     failed_count += 1
-                    print(f"✗ {template['id']} FAILED: {str(e)}")
+                    print(f"[FAIL] {template['id']}: {str(e)}")
                     raise
 
         print("\n" + "="*60)
@@ -74,7 +74,7 @@ class TestSpacetimeInit(unittest.TestCase):
             project_name = f"test-{template['id']}"
             project_path = Path(tmpdir) / project_name
 
-            print(f"  → Initializing project from template...")
+            print(f"  > Initializing project from template...")
             spacetime(
                 "init",
                 "--template", template["id"],
@@ -89,11 +89,11 @@ class TestSpacetimeInit(unittest.TestCase):
                 server_path = project_path / "spacetimedb"
                 self.assertTrue(server_path.exists(), f"Server directory not found for {template['id']}")
 
-                print(f"  → Publishing server...")
+                print(f"  > Publishing server...")
                 self._publish_server(template, server_path)
 
             if template.get("client_lang"):
-                print(f"  → Testing client...")
+                print(f"  > Testing client...")
                 self._test_client(template, project_path)
 
     def _publish_server(self, template, server_path):
@@ -111,7 +111,7 @@ class TestSpacetimeInit(unittest.TestCase):
             self._setup_csharp_nuget(server_path)
 
         domain = f"test-{server_lang}-{os.urandom(8).hex()}"
-        print(f"  → Building and publishing template '{template_id}' (language: {server_lang}) at {server_path}")
+        print(f"  > Building and publishing template '{template_id}' (language: {server_lang}) at {server_path}")
         spacetime("publish", "-s", "local", "--yes", "--project-path", str(server_path), domain)
 
         spacetime("delete", "-s", "local", "--yes", domain)
@@ -131,7 +131,7 @@ class TestSpacetimeInit(unittest.TestCase):
 
     def _setup_rust_local_sdk(self, server_path):
         """Replace crates.io spacetimedb dependency with local path dependency."""
-        print(f"  → Setting up local Rust SDK...")
+        print(f"  > Setting up local Rust SDK...")
         cargo_toml_path = server_path / "Cargo.toml"
         rust_sdk_path = STDB_DIR / "crates/bindings"
         self._update_cargo_toml_dependency(cargo_toml_path, "spacetimedb", rust_sdk_path)
@@ -150,7 +150,7 @@ class TestSpacetimeInit(unittest.TestCase):
 
     def _setup_typescript_local_sdk(self, server_path):
         """Replace npm registry spacetimedb dependency with local SDK path reference."""
-        print(f"  → Setting up local TypeScript SDK...")
+        print(f"  > Setting up local TypeScript SDK...")
         package_json_path = server_path / "package.json"
         typescript_sdk_path = STDB_DIR / "crates/bindings-typescript"
         self._update_package_json_dependency(package_json_path, "spacetimedb", typescript_sdk_path)
@@ -162,7 +162,7 @@ class TestSpacetimeInit(unittest.TestCase):
 
     def _setup_csharp_nuget(self, server_path):
         """Create a local nuget.config file to avoid polluting global NuGet sources"""
-        print(f"  → Setting up C# NuGet sources...")
+        print(f"  > Setting up C# NuGet sources...")
         nuget_config = server_path / "nuget.config"
         if not nuget_config.exists():
             nuget_config.write_text("""<?xml version="1.0" encoding="utf-8"?>
