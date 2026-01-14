@@ -225,7 +225,7 @@ class TestSpacetimeInit(unittest.TestCase):
             # Install other dependencies
             pnpm("install", cwd=project_path)
             # Run TypeScript compiler in check mode
-            run_cmd("pnpm", "exec", "tsc", "--noEmit", cwd=project_path)
+            pnpm("exec", "tsc", "--noEmit", cwd=project_path)
 
         elif client_lang == "csharp":
             print(f"    - Building C# client...")
