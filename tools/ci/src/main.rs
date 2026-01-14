@@ -219,7 +219,7 @@ fn main() -> Result<()> {
                     .into_iter()
                     .map(|s| s.to_string())
                     .chain(smoketest_args)
-                    .chain(vec!["--show-all-output".to_string(), "spacetimedb_init".to_string()]),
+                    .chain(vec!["spacetimedb_init".to_string()]),
             )
             .run()?;
         }
