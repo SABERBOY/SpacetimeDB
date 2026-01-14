@@ -159,10 +159,15 @@ class TestSpacetimeInit(unittest.TestCase):
         pnpm("install", cwd=typescript_sdk_path)
         pnpm("build", cwd=typescript_sdk_path)
 
-        package_json_path = server_path / "package.json"
-        self._update_package_json_dependency(package_json_path, "spacetimedb", typescript_sdk_path)
+        # Create a global link from the SDK
+        print(f"  > Linking TypeScript SDK globally...")
+        pnpm("link", "--global", cwd=typescript_sdk_path)
 
-        # Remove lockfile since we changed the dependency to a local path
+        # Link it in the server project
+        print(f"  > Linking spacetimedb package in server...")
+        pnpm("link", "--global", "spacetimedb", cwd=server_path)
+
+        # Remove lockfile since the linked version may differ from lockfile spec
         lockfile = server_path / "pnpm-lock.yaml"
         if lockfile.exists():
             lockfile.unlink()
@@ -211,15 +216,13 @@ class TestSpacetimeInit(unittest.TestCase):
 
         elif client_lang == "typescript":
             print(f"    - Type-checking TypeScript client...")
-            # Setup local SDK for client
-            package_json_path = project_path / "package.json"
-            typescript_sdk_path = STDB_DIR / "crates/bindings-typescript"
-            self._update_package_json_dependency(package_json_path, "spacetimedb", typescript_sdk_path)
-            # Remove lockfile since we changed the dependency to a local path
+            # Link the globally linked spacetimedb package
+            pnpm("link", "--global", "spacetimedb", cwd=project_path)
+            # Remove lockfile since the linked version may differ from lockfile spec
             lockfile = project_path / "pnpm-lock.yaml"
             if lockfile.exists():
                 lockfile.unlink()
-            # First install dependencies if not already done
+            # Install other dependencies
             pnpm("install", cwd=project_path)
             # Run TypeScript compiler in check mode
             run_cmd("pnpm", "exec", "tsc", "--noEmit", cwd=project_path)
