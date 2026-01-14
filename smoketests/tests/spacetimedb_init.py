@@ -145,6 +145,7 @@ class TestSpacetimeInit(unittest.TestCase):
         abs_path = Path(local_path).absolute()
         # Use as_uri() to get proper file:// URL format (works on both Windows and Unix)
         file_url = abs_path.as_uri()
+        print(f"absolute path to {package_name}: {file_url}")
         package_data["dependencies"][package_name] = file_url
 
         with open(package_json_path, 'w') as f:
