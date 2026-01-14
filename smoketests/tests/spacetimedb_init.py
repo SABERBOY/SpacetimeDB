@@ -141,9 +141,9 @@ class TestSpacetimeInit(unittest.TestCase):
         with open(package_json_path, 'r') as f:
             package_data = json.load(f)
 
-        # Convert Windows paths to POSIX for npm/pnpm file: protocol
-        posix_path = Path(local_path).as_posix()
-        package_data["dependencies"][package_name] = f"file:{posix_path}"
+        # Convert to absolute path and then to POSIX for npm/pnpm file: protocol
+        abs_path = Path(local_path).absolute().as_posix()
+        package_data["dependencies"][package_name] = f"file:{abs_path}"
 
         with open(package_json_path, 'w') as f:
             json.dump(package_data, f, indent=2)
