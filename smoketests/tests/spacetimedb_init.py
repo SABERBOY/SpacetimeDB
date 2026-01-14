@@ -151,8 +151,12 @@ class TestSpacetimeInit(unittest.TestCase):
     def _setup_typescript_local_sdk(self, server_path):
         """Replace npm registry spacetimedb dependency with local SDK path reference."""
         print(f"  > Setting up local TypeScript SDK...")
-        package_json_path = server_path / "package.json"
         typescript_sdk_path = STDB_DIR / "crates/bindings-typescript"
+        print(f"  > Building TypeScript SDK...")
+        pnpm("install", cwd=typescript_sdk_path)
+        pnpm("build", cwd=typescript_sdk_path)
+
+        package_json_path = server_path / "package.json"
         self._update_package_json_dependency(package_json_path, "spacetimedb", typescript_sdk_path)
 
         # Remove lockfile since we changed the dependency to a local path
