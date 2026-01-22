@@ -3,8 +3,8 @@ import { SpacetimeDBProvider } from 'spacetimedb/react';
 import { DbConnection, ErrorContext } from '../src/module_bindings';
 import { Identity } from 'spacetimedb';
 
-const URI = import.meta.env.VITE_SPACETIMEDB_URI ?? 'ws://localhost:3000';
-const MODULE = import.meta.env.VITE_SPACETIMEDB_MODULE ?? 'remix-ts';
+const HOST = import.meta.env.VITE_SPACETIMEDB_HOST ?? 'ws://localhost:3000';
+const DB_NAME = import.meta.env.VITE_SPACETIMEDB_DB_NAME ?? 'remix-ts';
 
 const onConnect = (_conn: DbConnection, identity: Identity, token: string) => {
   if (typeof window !== 'undefined') {
@@ -34,8 +34,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const connectionBuilder = useMemo(() => {
     if (typeof window === 'undefined') return null;
     return DbConnection.builder()
-      .withUri(URI)
-      .withModuleName(MODULE)
+      .withUri(HOST)
+      .withModuleName(DB_NAME)
       .withToken(localStorage.getItem('auth_token') || undefined)
       .onConnect(onConnect)
       .onDisconnect(onDisconnect)
