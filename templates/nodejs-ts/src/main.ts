@@ -10,8 +10,8 @@ import {
 } from './module_bindings/index.js';
 
 // Configuration
-const SPACETIMEDB_URI = process.env.SPACETIMEDB_URI ?? 'ws://localhost:3000';
-const MODULE_NAME = process.env.SPACETIMEDB_MODULE ?? 'nodejs-ts';
+const HOST = process.env.SPACETIMEDB_HOST ?? 'ws://localhost:3000';
+const DB_NAME = process.env.SPACETIMEDB_DB_NAME ?? 'nodejs-ts';
 
 // Token persistence (file-based for Node.js instead of localStorage)
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -138,15 +138,15 @@ function onConnectError(_ctx: ErrorContext, error: Error): void {
 // Main entry point
 async function main(): Promise<void> {
   console.log(`Connecting to SpacetimeDB...`);
-  console.log(`  URI: ${SPACETIMEDB_URI}`);
-  console.log(`  Module: ${MODULE_NAME}`);
+  console.log(`  URI: ${HOST}`);
+  console.log(`  Module: ${DB_NAME}`);
 
   const token = loadToken();
 
   // Build and establish connection
   conn = DbConnection.builder()
-    .withUri(SPACETIMEDB_URI)
-    .withModuleName(MODULE_NAME)
+    .withUri(HOST)
+    .withModuleName(DB_NAME)
     .withToken(token)
     .onConnect(onConnect)
     .onDisconnect(onDisconnect)
