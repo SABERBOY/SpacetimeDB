@@ -46,7 +46,7 @@ function SpacetimeDBContent() {
           type="text"
           placeholder="Enter name"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={e => setName(e.target.value)}
           style={{ padding: '0.5rem', marginRight: '0.5rem' }}
           disabled={!connected}
         />
