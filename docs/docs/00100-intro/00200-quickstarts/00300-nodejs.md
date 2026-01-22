@@ -153,8 +153,8 @@ import { DbConnection } from './module_bindings/index.js';
 
 // Build and establish connection
 const conn = DbConnection.builder()
-  .withUri(SPACETIMEDB_URI)
-  .withModuleName(MODULE_NAME)
+  .withUri(HOST)
+  .withModuleName(DB_NAME)
   .withToken(loadToken())  // Load saved token from file
   .onConnect((conn, identity, token) => {
     console.log('Connected! Identity:', identity.toHexString());
@@ -212,15 +212,15 @@ spacetime logs <database-name>
     <StepText>
       **WebSocket support:** Node.js 22+ has native WebSocket support. For Node.js 18-21, the SDK automatically uses the `undici` package (included in devDependencies).
 
-      **Environment variables:** Configure the connection using `SPACETIMEDB_URI` and `SPACETIMEDB_MODULE` environment variables.
+      **Environment variables:** Configure the connection using `SPACETIMEDB_HOST` and `SPACETIMEDB_DB_NAME` environment variables.
 
       **Graceful shutdown:** The template includes signal handlers for `SIGINT` and `SIGTERM` to cleanly disconnect when stopping the process.
     </StepText>
     <StepCode>
 ```bash
 # Configure via environment variables
-SPACETIMEDB_URI=ws://localhost:3000 \
-SPACETIMEDB_MODULE=my-app \
+SPACETIMEDB_HOST=ws://localhost:3000 \
+SPACETIMEDB_DB_NAME=my-app \
 npm run start
 
 # Or use a .env file with dotenv

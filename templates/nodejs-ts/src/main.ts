@@ -10,8 +10,8 @@ import {
 } from './module_bindings/index.js';
 
 // Configuration
-const SPACETIMEDB_URI = process.env.SPACETIMEDB_URI ?? 'ws://localhost:3000';
-const MODULE_NAME = process.env.SPACETIMEDB_MODULE ?? 'nodejs-ts';
+const HOST = process.env.SPACETIMEDB_HOST ?? 'ws://localhost:3000';
+const DB_NAME = process.env.SPACETIMEDB_DB_NAME ?? 'nodejs-ts';
 
 // Token persistence (file-based for Node.js instead of localStorage)
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -53,7 +53,7 @@ function setupCLI(): void {
   console.log('  hello   - Greet everyone (check server logs)');
   console.log('  Ctrl+C  - Quit\n');
 
-  rl.on('line', (input) => {
+  rl.on('line', input => {
     const text = input.trim();
     if (!text || !conn || !isReady) return;
 
@@ -80,7 +80,11 @@ function setupCLI(): void {
 }
 
 // Connection callbacks
-function onConnect(_conn: DbConnection, identity: Identity, token: string): void {
+function onConnect(
+  _conn: DbConnection,
+  identity: Identity,
+  token: string
+): void {
   console.log('\nConnected to SpacetimeDB!');
   console.log(`Identity: ${identity.toHexString().slice(0, 16)}...`);
 
@@ -90,7 +94,7 @@ function onConnect(_conn: DbConnection, identity: Identity, token: string): void
   // Subscribe to all tables
   _conn
     .subscriptionBuilder()
-    .onApplied((ctx) => {
+    .onApplied(ctx => {
       isReady = true;
 
       // Show current people
@@ -138,15 +142,15 @@ function onConnectError(_ctx: ErrorContext, error: Error): void {
 // Main entry point
 async function main(): Promise<void> {
   console.log(`Connecting to SpacetimeDB...`);
-  console.log(`  URI: ${SPACETIMEDB_URI}`);
-  console.log(`  Module: ${MODULE_NAME}`);
+  console.log(`  URI: ${HOST}`);
+  console.log(`  Module: ${DB_NAME}`);
 
   const token = loadToken();
 
   // Build and establish connection
   conn = DbConnection.builder()
-    .withUri(SPACETIMEDB_URI)
-    .withModuleName(MODULE_NAME)
+    .withUri(HOST)
+    .withModuleName(DB_NAME)
     .withToken(token)
     .onConnect(onConnect)
     .onDisconnect(onDisconnect)
@@ -167,7 +171,7 @@ process.on('SIGINT', shutdown);
 process.on('SIGTERM', shutdown);
 
 // Run the main function
-main().catch((err) => {
+main().catch(err => {
   console.error('Fatal error:', err);
   process.exit(1);
 });
