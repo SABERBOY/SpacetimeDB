@@ -45,6 +45,14 @@
       "client_lang": "typescript"
     },
     {
+      "id": "nodejs-ts",
+      "description": "Node.js TypeScript client and server template",
+      "server_source": "nodejs-ts/spacetimedb",
+      "client_source": "nodejs-ts",
+      "server_lang": "typescript",
+      "client_lang": "typescript"
+    },
+    {
       "id": "quickstart-chat-rust",
       "description": "Rust server/client implementing quickstart chat",
       "server_source": "quickstart-chat-rs/spacetimedb",
