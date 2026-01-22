@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { MetaFunction } from '@remix-run/node';
 import { tables, reducers } from '../../src/module_bindings';
 import { useSpacetimeDB, useTable, useReducer } from 'spacetimedb/react';
@@ -10,7 +10,8 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-export default function Index() {
+// Client-only component that uses SpacetimeDB hooks
+function SpacetimeDBContent() {
   const [name, setName] = useState('');
 
   const conn = useSpacetimeDB();
@@ -32,9 +33,7 @@ export default function Index() {
   };
 
   return (
-    <main style={{ padding: '2rem', fontFamily: 'system-ui, sans-serif' }}>
-      <h1>SpacetimeDB Remix App</h1>
-
+    <>
       <div style={{ marginBottom: '1rem' }}>
         Status:{' '}
         <strong style={{ color: connected ? 'green' : 'red' }}>
@@ -47,7 +46,7 @@ export default function Index() {
           type="text"
           placeholder="Enter name"
           value={name}
-          onChange={e => setName(e.target.value)}
+          onChange={(e) => setName(e.target.value)}
           style={{ padding: '0.5rem', marginRight: '0.5rem' }}
           disabled={!connected}
         />
@@ -72,6 +71,28 @@ export default function Index() {
           </ul>
         )}
       </div>
+    </>
+  );
+}
+
+export default function Index() {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  return (
+    <main style={{ padding: '2rem', fontFamily: 'system-ui, sans-serif' }}>
+      <h1>SpacetimeDB Remix App</h1>
+
+      {isClient ? (
+        <SpacetimeDBContent />
+      ) : (
+        <div style={{ marginBottom: '1rem' }}>
+          Status: <strong style={{ color: 'gray' }}>Loading...</strong>
+        </div>
+      )}
     </main>
   );
 }
