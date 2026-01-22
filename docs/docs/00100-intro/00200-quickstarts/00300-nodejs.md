@@ -87,19 +87,69 @@ spacetimedb.reducer('say_hello', (ctx) => {
     </StepCode>
   </Step>
 
+  <Step title="Run the client">
+    <StepText>
+      In a new terminal, run the Node.js client. It will connect to SpacetimeDB and start an interactive CLI where you can add people and query the database.
+    </StepText>
+    <StepCode>
+```bash
+# Run with auto-reload during development
+npm run dev
+
+# Or run once
+npm run start
+```
+    </StepCode>
+  </Step>
+
+  <Step title="Use the interactive CLI">
+    <StepText>
+      The client provides a command-line interface to interact with your SpacetimeDB module. Type a name to add a person, or use the built-in commands.
+    </StepText>
+    <StepCode>
+```
+Connecting to SpacetimeDB...
+  URI: ws://localhost:3000
+  Module: nodejs-ts
+
+Connected to SpacetimeDB!
+Identity: abc123def456...
+
+Current people (0):
+  (none yet)
+
+Commands:
+  <name>  - Add a person with that name
+  list    - Show all people
+  hello   - Greet everyone (check server logs)
+  Ctrl+C  - Quit
+
+> Alice
+[Added] Alice
+
+> Bob
+[Added] Bob
+
+> list
+People in database:
+  - Alice
+  - Bob
+
+> hello
+Called say_hello reducer (check server logs)
+```
+    </StepCode>
+  </Step>
+
   <Step title="Understand the client code">
     <StepText>
-      Open `src/main.ts` to see the Node.js client. It uses `DbConnection.builder()` to connect to SpacetimeDB, subscribes to tables, and handles real-time updates.
+      Open `src/main.ts` to see the Node.js client. It uses `DbConnection.builder()` to connect to SpacetimeDB, subscribes to tables, and sets up the interactive CLI using Node's `readline` module.
 
       Unlike browser apps, Node.js stores the authentication token in a file instead of localStorage.
     </StepText>
     <StepCode>
 ```typescript
-import { Identity } from 'spacetimedb';
-import { DbConnection, tables, reducers } from './module_bindings/index.js';
-
-const SPACETIMEDB_URI = process.env.SPACETIMEDB_URI ?? 'ws://localhost:3000';
-const MODULE_NAME = process.env.SPACETIMEDB_MODULE ?? 'nodejs-ts';
+import { DbConnection } from './module_bindings/index.js';
 
 // Build and establish connection
 const conn = DbConnection.builder()
@@ -113,15 +163,14 @@ const conn = DbConnection.builder()
     // Subscribe to all tables
     conn.subscriptionBuilder()
       .onApplied((ctx) => {
-        console.log('Subscription ready!');
-        // Call a reducer
-        conn.reducers.add({ name: 'Alice' });
+        // Show current data, start CLI
+        setupCLI();
       })
       .subscribeToAllTables();
 
     // Listen for table changes
     conn.db.person.onInsert((ctx, person) => {
-      console.log('New person:', person.name);
+      console.log(`[Added] ${person.name}`);
     });
   })
   .build();
@@ -129,31 +178,14 @@ const conn = DbConnection.builder()
     </StepCode>
   </Step>
 
-  <Step title="Run the client">
+  <Step title="Test with the SpacetimeDB CLI">
     <StepText>
-      In a new terminal, run the Node.js client. It will connect to SpacetimeDB, subscribe to tables, and log updates.
-
-      The client runs as a long-lived process, receiving real-time updates whenever data changes.
-    </StepText>
-    <StepCode>
-```bash
-# Run with auto-reload during development
-npm run dev
-
-# Or run once
-npm run start
-```
-    </StepCode>
-  </Step>
-
-  <Step title="Test with the CLI">
-    <StepText>
-      Use the SpacetimeDB CLI to call reducers and query your data directly.
+      You can also use the SpacetimeDB CLI to call reducers and query your data directly. Changes made via the CLI will appear in your Node.js client in real-time.
     </StepText>
     <StepCode>
 ```bash
 # Call the add reducer to insert a person
-spacetime call <database-name> add Bob
+spacetime call <database-name> add Charlie
 
 # Query the person table
 spacetime sql <database-name> "SELECT * FROM person"
@@ -161,6 +193,7 @@ spacetime sql <database-name> "SELECT * FROM person"
 ---------
  "Alice"
  "Bob"
+ "Charlie"
 
 # Call say_hello to greet everyone
 spacetime call <database-name> say_hello
@@ -169,6 +202,7 @@ spacetime call <database-name> say_hello
 spacetime logs <database-name>
 2025-01-13T12:00:00.000000Z  INFO: Hello, Alice!
 2025-01-13T12:00:00.000000Z  INFO: Hello, Bob!
+2025-01-13T12:00:00.000000Z  INFO: Hello, Charlie!
 2025-01-13T12:00:00.000000Z  INFO: Hello, World!
 ```
     </StepCode>

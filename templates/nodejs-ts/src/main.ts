@@ -1,13 +1,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import * as readline from 'readline';
 import { fileURLToPath } from 'url';
 import { Identity } from 'spacetimedb';
 import {
   DbConnection,
   ErrorContext,
   EventContext,
-  tables,
-  reducers,
 } from './module_bindings/index.js';
 
 // Configuration
@@ -39,11 +38,51 @@ function saveToken(token: string): void {
 
 // Connection state
 let conn: DbConnection | null = null;
+let isReady = false;
+
+// Setup interactive CLI
+function setupCLI(): void {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  console.log('\nCommands:');
+  console.log('  <name>  - Add a person with that name');
+  console.log('  list    - Show all people');
+  console.log('  hello   - Greet everyone (check server logs)');
+  console.log('  Ctrl+C  - Quit\n');
+
+  rl.on('line', (input) => {
+    const text = input.trim();
+    if (!text || !conn || !isReady) return;
+
+    if (text.toLowerCase() === 'list') {
+      console.log('\nPeople in database:');
+      let count = 0;
+      for (const person of conn.db.person.iter()) {
+        console.log(`  - ${person.name}`);
+        count++;
+      }
+      if (count === 0) {
+        console.log('  (none)');
+      }
+      console.log();
+    } else if (text.toLowerCase() === 'hello') {
+      conn.reducers.sayHello({});
+      console.log('Called say_hello reducer (check server logs)\n');
+    } else {
+      conn.reducers.add({ name: text });
+    }
+  });
+
+  rl.on('close', shutdown);
+}
 
 // Connection callbacks
 function onConnect(_conn: DbConnection, identity: Identity, token: string): void {
-  console.log('Connected to SpacetimeDB!');
-  console.log('Identity:', identity.toHexString());
+  console.log('\nConnected to SpacetimeDB!');
+  console.log(`Identity: ${identity.toHexString().slice(0, 16)}...`);
 
   // Save token for future connections
   saveToken(token);
@@ -52,35 +91,38 @@ function onConnect(_conn: DbConnection, identity: Identity, token: string): void
   _conn
     .subscriptionBuilder()
     .onApplied((ctx) => {
-      console.log('Subscription applied, initial data received');
+      isReady = true;
 
-      // Log all existing people
-      const people = ctx.db.person.iter();
-      console.log('Current people in database:');
-      for (const person of people) {
-        console.log(`  - ${person.name}`);
+      // Show current people
+      const people = [...ctx.db.person.iter()];
+      console.log(`\nCurrent people (${people.length}):`);
+      if (people.length === 0) {
+        console.log('  (none yet)');
+      } else {
+        for (const person of people) {
+          console.log(`  - ${person.name}`);
+        }
       }
 
-      // Example: Add a person after subscription is ready
-      console.log('\nAdding a new person...');
-      _conn.reducers.add({ name: `Node-User-${Date.now()}` });
+      setupCLI();
     })
-    .onError((ctx, err) => {
+    .onError((_ctx, err) => {
       console.error('Subscription error:', err);
     })
     .subscribeToAllTables();
 
   // Register callbacks for table changes
-  _conn.db.person.onInsert((ctx: EventContext, person) => {
-    console.log(`[INSERT] New person added: ${person.name}`);
+  _conn.db.person.onInsert((_ctx: EventContext, person) => {
+    console.log(`[Added] ${person.name}`);
   });
 
-  _conn.db.person.onDelete((ctx: EventContext, person) => {
-    console.log(`[DELETE] Person removed: ${person.name}`);
+  _conn.db.person.onDelete((_ctx: EventContext, person) => {
+    console.log(`[Removed] ${person.name}`);
   });
 }
 
 function onDisconnect(_ctx: ErrorContext, error?: Error): void {
+  isReady = false;
   if (error) {
     console.error('Disconnected with error:', error);
   } else {
@@ -95,13 +137,11 @@ function onConnectError(_ctx: ErrorContext, error: Error): void {
 
 // Main entry point
 async function main(): Promise<void> {
-  console.log(`Connecting to SpacetimeDB at ${SPACETIMEDB_URI}...`);
-  console.log(`Module: ${MODULE_NAME}`);
+  console.log(`Connecting to SpacetimeDB...`);
+  console.log(`  URI: ${SPACETIMEDB_URI}`);
+  console.log(`  Module: ${MODULE_NAME}`);
 
   const token = loadToken();
-  if (token) {
-    console.log('Using saved authentication token');
-  }
 
   // Build and establish connection
   conn = DbConnection.builder()
@@ -112,8 +152,6 @@ async function main(): Promise<void> {
     .onDisconnect(onDisconnect)
     .onConnectError(onConnectError)
     .build();
-
-  console.log('Connection initiated, waiting for callbacks...');
 }
 
 // Graceful shutdown
