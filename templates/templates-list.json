@@ -45,6 +45,14 @@
       "client_lang": "typescript"
     },
     {
+      "id": "remix-ts",
+      "description": "Remix with TypeScript server",
+      "server_source": "remix-ts/spacetimedb",
+      "client_source": "remix-ts",
+      "server_lang": "typescript",
+      "client_lang": "typescript"
+    },
+    {
       "id": "nodejs-ts",
       "description": "Node.js TypeScript client and server template",
       "server_source": "nodejs-ts/spacetimedb",
